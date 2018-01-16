@@ -12,7 +12,7 @@ const login = () => import('@/views/login/index')
 
 const Layout = () => import('@/views/layout/index')
 const dashboard = () => import('@/views/dashboard/index')
-const table = () => import('@/views/table/index')
+const accountRight = () => import('@/views/account/index')
 const tree = () => import('@/views/tree/index')
 const form = () => import('@/views/form/index')
 
@@ -31,29 +31,31 @@ export const constantRouterMap = [
   { path: '/login', component: login, hidden: true },
 
   {
-    path: '/',
+    path: '',
     component: Layout,
     redirect: '/dashboard',
-    name: 'Dashboard',
-    hidden: true,
+    
     children: [{
       path: 'dashboard',
-      component: dashboard
+      name:'Dashboard',
+      component: dashboard,
+      meta: { title: '控制台', icon: 'el-icon-menu' }
+      
     }]
   },
 
   {
-    path: '/example',
+    path: '/account',
     component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: '导航一', icon: 'el-icon-menu' },
+    redirect: '/account/account_right',
+    name: 'Account',
+    meta: { title: '用户权限', icon: 'el-icon-menu' },
     children: [
       {
-        path: 'table',
-        name: 'Table',
-        component: table,
-        meta: { title: 'Table', icon: 'table' }
+        path: 'account_right',
+        name: 'Account',
+        component: accountRight,
+        meta: { title: '账户管理', icon: 'table' }
       },
       {
         path: 'tree',

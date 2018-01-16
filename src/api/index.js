@@ -7,8 +7,6 @@ let api = axios.create({
     withCredentials: true
 })
 
-axios.defaults.header['X-Requested-Width'] = "XMLHttpRequest";
-
 export let fetch = (method, url, data) => {
     return new Promise((resolve, reject) => {
         axios({

@@ -53,9 +53,13 @@ a:hover {
 
 //main-container全局样式
 .app-main{
-  min-height: 100%
+  min-height: 100%;
+  padding: 20px;
 }
 
 .app-container {
   padding: 20px;
+}
+.el-dialog__header{
+  text-align: left;
 }
