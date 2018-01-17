@@ -2,7 +2,7 @@
   <div>
     <el-table :data="account_data" border style="width: 100%">
 
-    <el-table-column prop="id" label="用户ID"></el-table-column>
+    <el-table-column prop="id" label="用户ID" width="70px"></el-table-column>
     <el-table-column prop="username" label="用户名"></el-table-column>
     <el-table-column label="是否超级管理员">
       <template slot-scope="scope">
@@ -15,28 +15,29 @@
     <el-table-column prop="account_end_time" label="截止时间"></el-table-column>
     <el-table-column label="赠送时间">
       <template slot-scope="scope">
-        <span style="margin-left: 10px">{{ scope.row.account_extra_time }}</span>
+        <span style="margin-left: 10px">{{ scope.row.account_extra_time }} 天</span>
       </template>
     </el-table-column>
-    <el-table-column label="操作" width="300px">
+    <el-table-column label="操作" width="330px">
       <template slot-scope="scope">
-        <el-button
-          size="mini"
-          type="success"
+        <el-button size="mini" type="success" v-if="!scope.row.is_admin"
           @click="handleSetAdmin(scope.$index, scope.row)">设置管理员</el-button>
+        <el-button size="mini" type="warning" v-else
+          @click="handleCancelAdmin(scope.$index, scope.row)">取消管理员</el-button>
+          
           <el-button size="mini" type="primary"
           @click="handleSetInviteCode(scope.$index, scope.row)">设置邀请码 </el-button>
           <el-button size="mini" type="danger"
-          @click="handleRecharge(scope.$index, scope.row)">充值</el-button>
+          @click="handleRecharge(scope.$index, scope.row)">赠送天数</el-button>
       </template>
     </el-table-column>
     
   </el-table>
 
-  <el-dialog title="充值提示" :visible.sync="rechargeDialogFormVisible" width="400px">
+  <el-dialog title="赠送提示" :visible.sync="rechargeDialogFormVisible" width="400px">
   <el-form :model="rechargeForm">
-    <el-form-item label="充值金额" :label-width="formLabelWidth">
-      <el-input v-model="rechargeForm.money" auto-complete="off"></el-input>
+    <el-form-item label="赠送天数" :label-width="formLabelWidth">
+      <el-input v-model="rechargeForm.day" auto-complete="off"></el-input>
     </el-form-item>
    
   </el-form>
@@ -49,14 +50,14 @@
   </div>
 </template>
 <script>
-import{getCustomers, setExtraDays} from '@/api/api'
+import{getCustomers, setAdmin, setExtraDays, setInviteCode, setAdminNormal} from '@/api/api'
 export default {
   data(){
     return {
       account_data:[],
       rechargeDialogFormVisible: false,
         rechargeForm: {
-          money: ''
+          day: 1
           
         },
         formLabelWidth: '80px',
@@ -72,15 +73,42 @@ export default {
       getCustomers().then(
         (resData) => {
           this.account_data = resData.results;
-          
+        }
+      )
+    },
+    //设置管理员
+    handleSetAdmin(index, row) {
+      var param = {
+        id: row.id
+      }
+      setAdmin(param).then(
+        (resData) => {
+          if(resData && resData.status == 'ok'){
+            this.$message.success('设置管理员成功');   
+            this.get_customers();   //刷新列表   
+          }else{
+            this.$message.success('设置管理员失败');  
+          }
+        }
+      )
+    },
+    //取消管理员
+    handleCancelAdmin(index, row) {
+      var param = {
+        id: row.id
+      }
+      setAdminNormal(param).then(
+        (resData) => {
+          if(resData && resData.status == 'ok'){
+            this.$message.success('取消管理员成功');   
+            this.get_customers();   //刷新列表   
+          }else{
+            this.$message.success('取消管理员失败');  
+          }
         }
       )
     },
     
-    //设置管理员
-    handleSetAdmin(index, row) {
-        console.log(index, row);
-      },
     //赠送天数
     handleRecharge(index, row) {
       console.log(index, row);
@@ -91,7 +119,19 @@ export default {
     },
     //设置邀请码
     handleSetInviteCode(index, row){
-      console.log(index, row);
+      var param = {
+        id: row.id
+      }
+      setInviteCode(param).then(
+        (resData) => {
+          if(resData && resData.status == 'ok'){
+            this.$message.success('设置邀请码成功');   
+            this.get_customers();   //刷新列表   
+          }else{
+            this.$message.success('设置邀请码失败');  
+          }
+        }
+      )
     },
     confirm(){
       console.log(this.user_row);
@@ -99,18 +139,23 @@ export default {
     },
     //确认赠送天数
     confrimRecharge(done) {
-     this.$confirm('确认充值？')
+     this.$confirm(`认赠送 ${this.rechargeForm.day} 天？`)
           .then(_ => {
             var param = {
               id: this.user_row.id
             }
             var reqData = {
-              "is_admin": this.user_row.is_admin,
-              "vpnname": this.user_row.vpnname
+              "day": this.rechargeForm.day
             }
             setExtraDays(param, reqData).then(
               (resData) =>{
-                
+                if(resData && resData.status == 'ok'){
+                  this.$message.success('赠送成功');   
+                  this.get_customers();   //刷新列表   
+                }else{
+                  this.$message.success('赠送失败');  
+                }
+                        
               }
             )
             this.rechargeDialogFormVisible = false;
@@ -118,6 +163,7 @@ export default {
           })
           .catch(_ => {});
     },
+   
   }
 }
 </script>
