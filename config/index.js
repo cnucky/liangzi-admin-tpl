@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/adminapi':{
-        target: 'http://101.251.248.122:9999/',
+        target: 'http://adminquantom.internmate.com',
         changeOrigin: true,
         parthRerite:{
           '^/adminapi':'/adminapi'

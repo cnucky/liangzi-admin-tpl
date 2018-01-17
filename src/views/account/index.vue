@@ -6,8 +6,20 @@
     <el-table-column prop="username" label="用户名"></el-table-column>
     <el-table-column label="是否超级管理员">
       <template slot-scope="scope">
-        <span style="margin-left: 10px" v-if="!!scope.row.is_admin">是</span>
-        <span style="margin-left: 10px" v-else>否</span>
+
+        <!-- 是 -->
+        <el-tag v-if="!!scope.row.is_admin"
+          :type="!!scope.row.is_admin ? 'success' : 'error'"
+          close-transition>是
+        </el-tag>
+        <!-- 否 -->
+        <el-tag v-else
+          :type="!!scope.row.is_admin ? 'success' : 'error'"
+          close-transition>否
+        </el-tag>
+
+        <!-- <span style="margin-left: 10px" v-if="!!scope.row.is_admin">是</span>
+        <span style="margin-left: 10px" v-else>否</span> -->
         
       </template>
     </el-table-column>
@@ -31,8 +43,17 @@
           @click="handleRecharge(scope.$index, scope.row)">赠送天数</el-button>
       </template>
     </el-table-column>
-    
   </el-table>
+  <!-- 分页 -->
+  <div class="block">
+    <el-pagination @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[20]"
+      :page-size="20"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total_items">
+    </el-pagination>
+  </div>
 
   <el-dialog title="赠送提示" :visible.sync="rechargeDialogFormVisible" width="400px">
   <el-form :model="rechargeForm">
@@ -50,7 +71,7 @@
   </div>
 </template>
 <script>
-import{getCustomers, setAdmin, setExtraDays, setInviteCode, setAdminNormal} from '@/api/api'
+import{getCustomers, setAdmin, setExtraDays, setInviteCode, setAdminNormal,page } from '@/api/api'
 export default {
   data(){
     return {
@@ -58,10 +79,12 @@ export default {
       rechargeDialogFormVisible: false,
         rechargeForm: {
           day: 1
-          
         },
         formLabelWidth: '80px',
-        user_row:'',
+        user_row:'',   //当前操作的行
+        currentPage: 1,
+        total_items: 0,  //总条数
+        page_num: 0,   //要跳转到的页码
       
     }
   },
@@ -70,9 +93,11 @@ export default {
   },
   methods: {
     get_customers(){
+      
       getCustomers().then(
         (resData) => {
           this.account_data = resData.results;
+          this.total_items = resData.count;
         }
       )
     },
@@ -111,9 +136,7 @@ export default {
     
     //赠送天数
     handleRecharge(index, row) {
-      console.log(index, row);
-      this.rechargeForm.money = ''; //重置赠送金额
-
+      this.rechargeForm.day = 1; //重置赠送金额
       this.user_row = row;
       this.rechargeDialogFormVisible = true;
     },
@@ -139,7 +162,7 @@ export default {
     },
     //确认赠送天数
     confrimRecharge(done) {
-     this.$confirm(`认赠送 ${this.rechargeForm.day} 天？`)
+     this.$confirm(`确认赠送 ${this.rechargeForm.day} 天？`)
           .then(_ => {
             var param = {
               id: this.user_row.id
@@ -163,6 +186,19 @@ export default {
           })
           .catch(_ => {});
     },
+    
+    //分页
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`);
+      var param = {
+        num: val
+      }
+      page(param).then(
+        (resData) =>{
+          this.account_data = resData.results; 
+        }
+      )
+    }
    
   }
 }

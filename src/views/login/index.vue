@@ -5,29 +5,26 @@
       <h3 class="title">量子加速器管理系统</h3>
       <el-form-item prop="username">
         
-        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="username" />
+        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="用户名" />
       </el-form-item>
       <el-form-item prop="password">
         
         <el-input name="password" :type="pwdType" @keyup.enter.native="handleLogin" v-model="loginForm.password" autoComplete="on"
-          placeholder="password"></el-input>
+          placeholder="密码"></el-input>
           <span class="show-pwd" @click="showPwd"><i class="el-icon-view"></i></span>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" style="width:100%;" :loading="loading" @click.native.prevent="handleLogin">
-          Sign in
+          登录
         </el-button>
       </el-form-item>
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: 123456</span>
-      </div>
     </el-form>
   </div>
 </template>
 
 <script>
 import { isvalidUsername } from '@/utils/validate'
+
 
 export default {
   name: 'login',
@@ -48,8 +45,8 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: '123456'
+        username: '',
+        password: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -71,15 +68,22 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true;
-          this.$router.push({ path: '/' });
-            // this.$store.dispatch('Login', this.loginForm).then(() => {
-            //   this.loading = false
-            //   this.$router.push({ path: '/' })
-            // }).catch(() => {
-            //   this.loading = false
-            // })
+          // this.$router.push({ path: '/' });
+          this.$store.dispatch('Login', this.loginForm).then(
+            (resData) => {
+              //console.log(resData);
+              if(resData && resData.status == 'ok'){
+                this.$router.push({ path: '/' });
+              }else{
+                this.$message.error(resData.message);
+              }
+              this.loading = false;
+            }
+          ).catch(() => {
+            this.loading = false;
+          })
         } else {
-          return false
+          return false;
         }
       })
     }
@@ -113,7 +117,7 @@ export default {
     .el-input {
       display: inline-block;
       height: 47px;
-      width: 85%;
+      width: 95%;
     }
     .tips {
       font-size: 14px;

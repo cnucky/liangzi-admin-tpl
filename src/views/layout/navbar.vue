@@ -8,15 +8,13 @@
         <i class="el-icon-caret-bottom"></i>
       </div>
       <el-dropdown-menu class="user-dropdown" slot="dropdown">
-        
           <el-dropdown-item>
-            <router-link class="inlineBlock" to="/">
-            Home
-            </router-link>
+            
+           <span>{{username}}</span>
+           
           </el-dropdown-item>
-        
         <el-dropdown-item divided>
-          <span @click="logout" style="display:block;">LogOut</span>
+          <span @click="logout" style="display:block;">退出</span>
         </el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
@@ -29,6 +27,11 @@ import Breadcrumb from '@/components/breadcrumb'
 import Hamburger from '@/components/hamburger'
 
 export default {
+  data(){
+    return{
+      username:''
+    }
+  },
   components: {
     Breadcrumb,
     Hamburger
@@ -38,6 +41,9 @@ export default {
       'sidebar',
       'avatar'
     ])
+  },
+  mounted () {
+    this.username =  localStorage.getItem('username');
   },
   methods: {
     toggleSideBar() {

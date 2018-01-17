@@ -1,5 +1,13 @@
 import { fetch } from '@/api/index'
 
+//登录
+export const login = (reqData) => fetch('POST','/adminapi/login/',{data: reqData})
+//退出
+export const loginOut = () => fetch('GET','/adminapi/logout/')
+
+//判断用户是否登录
+export const checkLogin = () => fetch('GET','/adminapi/auth_info/')
+
 //获取用户
 export const getCustomers = () => fetch('GET','/adminapi/customers/')
 
@@ -11,6 +19,8 @@ export const setInviteCode = (param) => fetch('POST',`/adminapi/customers/${para
 export const setAdmin = (param) => fetch('POST',`/adminapi/customers/${param.id}/set_customer_admin/`)
 //取消管理员
 export const setAdminNormal = (param) => fetch('POST',`/adminapi/customers/${param.id}/set_customer_normal/`)
+//分页
+export const page = (param) => fetch('GET',`/adminapi/customers/?page=${param.num}`)
 
 
 //dashboard
