@@ -1,22 +1,40 @@
 <template>
   <div>
-    <el-button size="mini" class="refresh_echart" type="default" @click="get_echarts_data">
+    <el-button size="mini" class="refresh_echart" type="default" @click="refresh_echarts_data">
       <i class="el-icon-refresh"></i>
+      <span>全部刷新</span>
     </el-button>
     <div id="main" style="width: 100%;height:500px;"></div>
+    <div id="public_main" style="width: 100%;height:500px;"></div>
+    <div id="gic_main" style="width: 100%;height:500px;"></div>
+
   </div>
 </template>
 <script>
 import echarts from 'echarts'
-import{getEcharts} from '@/api/api'
+import{getEcharts, getPublicEcharts, getGicEcharts} from '@/api/api'
 export default {
   data(){
     return {
-      echart_data:[]
+      echart_data:[],
+      public_echart_data:[],
+      public_echart_legend:[],
+      gic_echart_data:[],
+      r:'',
+      g:'',
+      b:'',
+      color:'',
+      interval:''
+      
     }
   },
   created () {
+    window.clearInterval(this.interval);
     this.get_echarts_data();
+    this.get_public_echarts_data();
+    
+    this.get_gic_echarts_data();
+    this.set_interval();
   },
   methods: {
     get_echarts_data(){
@@ -24,10 +42,98 @@ export default {
         (resData) => {
           this.echart_data = resData.results;
           this.set_chart(this.echart_data[0].active_times, this.echart_data[0].active_count);  
-          this.set_interval();
+          //this.set_interval();
         }
       )
     },
+    get_color(){
+      this.r = Math.floor(Math.random()*255);
+      this.g = Math.floor(Math.random()*255);
+      this.b = Math.floor(Math.random()*255);
+      this.color = 'rgba('+ this.r +','+ this.g +','+ this.b +',0.8)';
+      return this.color;
+    },
+    //公网
+    get_public_echarts_data(){
+      getPublicEcharts().then(
+        (resData) => {
+            if(resData && resData.status == 'ok'){
+              var yData = [];
+              this.public_echart_data = resData.data;
+              if(this.public_echart_data.length > 0){
+                for(var i = 0;i<this.public_echart_data.length;i++){
+                  this.public_echart_legend.push(this.public_echart_data[i].name);
+                  yData.push({
+                    name: this.public_echart_data[i].name,
+                    type: 'line',
+                    data: this.public_echart_data[i].monitor_data,
+                    itemStyle: {
+                        normal: {
+                            color: this.get_color()
+                        }
+                    },
+                    markPoint: {
+                        data: [
+                            {type: 'max', name: '最大值'},
+                            {type: 'min', name: '最小值'}
+                        ]
+                    },
+                    markLine: {
+                        data: [
+                            {type: 'average', name: '平均值'}
+                        ]
+                    }
+                  });
+                }
+
+                this.set_public_chart(this.public_echart_data[0].monitor_time, yData);  
+              }
+              
+            }
+        }
+      )
+    },
+    get_gic_echarts_data(){
+      getGicEcharts().then(
+        (resData) => {
+          if(resData && resData.status == 'ok'){
+            var yData = [];
+            this.gic_echart_data = resData.data;
+            if(this.gic_echart_data.length > 0){
+
+              for(var i = 0;i<this.gic_echart_data.length;i++){
+                  this.public_echart_legend.push(this.gic_echart_data[i].name);
+                  yData.push({
+                    name: this.gic_echart_data[i].name,
+                    type: 'line',
+                    data: this.gic_echart_data[i].monitor_data,
+                    itemStyle: {
+                        normal: {
+                            color: this.get_color()
+                        }
+                    },
+                    markPoint: {
+                        data: [
+                            {type: 'max', name: '最大值'},
+                            {type: 'min', name: '最小值'}
+                        ]
+                    },
+                    markLine: {
+                        data: [
+                            {type: 'average', name: '平均值'}
+                        ]
+                    }
+                  });
+                }
+              this.set_gic_chart(this.gic_echart_data[0].monitor_time, yData);
+            }
+
+          }
+          
+        }
+      )
+    },
+    //人数
     set_chart(xdata, ydata){
       var myChart = echarts.init(document.getElementById('main'));
       var option = {
@@ -68,18 +174,101 @@ export default {
           myChart.resize();
       })
     },
+    //公网
+    set_public_chart(xdata, ydata){
+      
+      var myChart = echarts.init(document.getElementById('public_main'));
+      var option = {
+          title: {
+              text: '公网监控图'
+          },
+          tooltip: {
+              trigger: 'axis'
+          },
+          legend: {
+              data: this.public_echart_legend
+          },
+          
+          xAxis:  {
+              type: 'category',
+              boundaryGap: false,
+              data: xdata
+              
+          },
+          yAxis: {
+              type: 'value',
+              smooth: true,
+              name:'单位（M）',
+              // splitNumber: 5,
+              minInterval: 1,
+              min:0
+          },
+          series: ydata
+      }
+
+      myChart.setOption(option);
+        // 为每个图添加resize事件监听，解决只有一个图表自适应的问题
+      window.addEventListener("resize", function () {
+          myChart.resize();
+      })
+    },
+    //GIC
+    set_gic_chart(xdata, ydata){
+      
+      var myChart = echarts.init(document.getElementById('gic_main'));
+      var option = {
+          title: {
+              text: 'GIC监控图'
+          },
+          tooltip: {
+              trigger: 'axis'
+          },
+          legend: {
+              data: this.public_echart_legend
+          },
+          xAxis:  {
+              type: 'category',
+              boundaryGap: false,
+              data: xdata,
+              
+          },
+          yAxis: {
+              type: 'value',
+              smooth: true,
+              axisLabel: {
+                  formatter: '{value} M'
+              },
+              // splitNumber: 5,
+              minInterval: 1,
+              min:0
+          },
+          series: ydata
+      }
+
+      myChart.setOption(option);
+        // 为每个图添加resize事件监听，解决只有一个图表自适应的问题
+      window.addEventListener("resize", function () {
+          myChart.resize();
+      })
+    },
+    
+    refresh_echarts_data(){
+      this.get_echarts_data();
+      this.get_public_echarts_data();
+      this.get_gic_echarts_data();
+    },
+    //十分钟刷新
     set_interval(){
       var self = this;
-      var interval = window.setInterval(function(){
-        getEcharts().then(
-          (resData) => {
-            self.echart_data = resData.results;
-            self.set_chart(self.echart_data[0].active_times, self.echart_data[0].active_count);  
-          }
-        )
+      this.interval = window.setInterval( function (){
+        self.get_echarts_data();
+        self.get_public_echarts_data();
+        self.get_gic_echarts_data();
+      }, 60*1000*10);
+
       
-      }, 60*1000*10)
     }
+
   }
 }
 </script>

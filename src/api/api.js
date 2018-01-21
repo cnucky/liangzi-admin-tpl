@@ -23,6 +23,14 @@ export const setAdminNormal = (param) => fetch('POST',`/adminapi/customers/${par
 export const page = (param) => fetch('GET',`/adminapi/customers/?page=${param.num}`)
 
 
-//dashboard
+//dashboard --监控人数
 export const getEcharts = () => fetch('GET','/adminapi/stats/')
+
+//监控--公网
+export const getPublicEcharts = () => fetch('GET','/adminapi/public/')
+
+//监控--gic
+export const getGicEcharts = () => fetch('GET','/adminapi/gic/')
+
+
 
