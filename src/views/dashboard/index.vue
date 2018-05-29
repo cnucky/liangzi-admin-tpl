@@ -1,9 +1,27 @@
 <template>
   <div>
-    <el-button size="mini" class="refresh_echart" type="default" @click="refresh_echarts_data">
-      <i class="el-icon-refresh"></i>
-      <span>全部刷新</span>
-    </el-button>
+    <div class="clearfix date_filter">
+      <!-- 日期筛选 -->
+      <div class="daterange_block">
+        <span class="demonstration">日期：</span>
+        <el-date-picker
+          v-model="date_time"
+          type="daterange"
+          value-format="yyyy-MM-dd"
+          align="right"
+          unlink-panels
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          :picker-options="pickerOptions2">
+        </el-date-picker>
+      </div>
+      <el-button type="primary" class="search_btn" icon="el-icon-search" @click="get_new_echarts_data">搜索</el-button>
+      <el-button size="mini" class="refresh_echart" type="default" @click="refresh_echarts_data">
+        <i class="el-icon-refresh"></i>
+        <span>全部刷新</span>
+      </el-button>
+    </div>
     <div id="main" style="width: 100%;height:500px;"></div>
     <div id="public_main" style="width: 100%;height:500px;"></div>
     <div id="gic_main" style="width: 100%;height:500px;"></div>
@@ -24,8 +42,36 @@ export default {
       g:'',
       b:'',
       color:'',
-      interval:''
+      interval:'',
+      pickerOptions2: {
+          shortcuts: [{
+            text: '最近一周',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit('pick', [start, end]);
+            }
+          }, {
+            text: '最近一个月',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+              picker.$emit('pick', [start, end]);
+            }
+          }, {
+            text: '最近三个月',
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+              picker.$emit('pick', [start, end]);
+            }
+          }]
       
+    },
+    date_time: ''
     }
   },
   created () {
@@ -50,7 +96,7 @@ export default {
       this.r = Math.floor(Math.random()*255);
       this.g = Math.floor(Math.random()*255);
       this.b = Math.floor(Math.random()*255);
-      this.color = 'rgba('+ this.r +','+ this.g +','+ this.b +',0.8)';
+      this.color = 'rgba('+ this.r +','+ this.g +','+ this.b +',1)';
       return this.color;
     },
     //公网
@@ -221,7 +267,7 @@ export default {
               text: 'GIC监控图'
           },
           tooltip: {
-              trigger: 'axis'
+              trigger: 'axis',
           },
           legend: {
               data: this.public_echart_legend
@@ -250,6 +296,12 @@ export default {
       window.addEventListener("resize", function () {
           myChart.resize();
       })
+    },
+    get_new_echarts_data(){
+      if(this.date_time.length > 0){
+        console.log(this.date_time);
+      }
+     
     },
     
     refresh_echarts_data(){
@@ -280,6 +332,15 @@ export default {
 }
 #main{
   clear: both;
+}
+.daterange_block,.search_btn{
+  float: left;
+}
+.search_btn{
+  margin: 0 0 0 30px;
+}
+.date_filter{
+  margin: 0px 0 30px 0;
 }
 
 </style>
